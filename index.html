@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>>Our Valentine Countdown</title>
+    <style>
+        :root {
+            --lockPhoto: url('your-lock-background.jpg');
+            --heroPhoto: url('your-countdown-background.jpg');
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', system-ui;
+            background: linear-gradient(135deg, #ff758c, #ff7eb3);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .center {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
+            border-radius: 22px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .btn {
+            border: none;
+            border-radius: 14px;
+            padding: 12px 18px;
+            background: #ff4d79;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+        .btn:hover {
+            background: #ff1a5e;
+            transform: translateY(-2px);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            background: rgba(255, 255, 255, 0.16);
+            color: #fff;
+        }
+
+        .input::placeholder {
+            color: #fbe1ea;
+        }
+
+        .error {
+            color: #ffe666;
+            min-height: 1.2em;
+            margin-top: 10px;
+        }
+
+        #lock {
+            background: var(--lockPhoto) center/cover no-repeat fixed, linear-gradient(135deg, #ff758c, #ff7eb3);
+            position: relative;
+        }
+
+        #lock::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.35) 40%, rgba(0, 0, 0, 0.5));
+            z-index: -1;
+        }
+
+        #app {
+            display: none;
+            background: var(--heroPhoto) center/cover no-repeat fixed, linear-gradient(135deg, #ff758c, #ff7eb3);
+            position: relative;
+        }
+
+        #app::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.35) 40%, rgba(0, 0, 0, 0.55));
+            z-index: -1;
+        }
+
+        .content {
+            width: min(1100px, 92%);
+            margin: 90px auto 40px;
+            text-align: center;
+        }
+
+        .title {
+            font-size: clamp(26px, 5vw, 40px);
+            margin-bottom: 18px;
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        .subtitle {
+            font-size: clamp(14px, 2.6vw, 16px);
+            margin-bottom: 28px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 18px 0 34px;
+        }
+
+        .countdown {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 20px;
+            justify-items: center;
+        }
+
+        @media(max-width:900px) {
+            .countdown {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media(max-width:560px) {
+            .countdown {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .ring {
+            width: 118px;
+            height: 118px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            position: relative;
+        }
+
+        .bubble {
+            width: 100%;
+            height: 100%;
+            border-radius: inherit;
+            background: rgba(255, 255, 255, 0.13);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .num {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        /* Gallery */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 50;
+        }
+
+        .modal.open {
+            display: flex;
+        }
+
+        .album {
+            width: min(1000px, 96%);
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            padding: 10px;
+        }
+
+        .closeX {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .grid {
+            flex: 1;
+            overflow: auto;
+            display: grid;
+            gap: 15px;
+            padding: 5px;
+        }
+
+        #photosGrid {
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        }
+
+        #videosGrid {
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        }
+
+        .thumb {
+            width: 100%;
+            border-radius: 12px;
+            cursor: pointer;
+            object-fit: cover;
+        }
+
+        /* Lightbox */
+        #lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 60;
+            flex-direction: column;
+        }
+
+        #lightbox.open {
+            display: flex;
+        }
+
+        #lightbox img,
+        #lightbox video {
+            max-width: 90%;
+            max-height: 80vh;
+            border-radius: 12px;
+        }
+
+        #lightbox span {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            cursor: pointer;
+            font-size: 24px;
+            color: #fff;
+        }
+
+        #lightbox .nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 36px;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 8px 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        #lightbox .prev {
+            left: 10px;
+        }
+
+        #lightbox .next {
+            right: 10px;
+        }
+
+        /* Responsive adjustments */
+        @media(max-width:768px) {
+            .album {
+                height: 70vh;
+            }
+
+            #lightbox img,
+            #lightbox video {
+                max-height: 70vh;
+            }
+
+            .thumb {
+                min-height: 100px;
+            }
+        }
+
+        @media(max-width:480px) {
+            .countdown {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            #photosGrid {
+                grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            }
+
+            #videosGrid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- LOCK -->
+    <section id="lock" class="center">
+        <div class="lock-card glass">
+            <h2 class="lock-title">🔒 Enter Password to Open Our Valentine</h2>
+            <br>
+            <div class="tag" style="text-align: center;">Hint: our special day 🤫</div>
+            <br>
+            <input id="pw" class="input" type="password" placeholder="Enter code" />
+            <div style="margin-top:14px;display:flex;gap:10px;justify-content:center">
+                <button class="btn" id="unlockBtn">Unlock</button>
+            </div>
+            <div class="error" id="lockError"></div>
+        </div>
+    </section>
+
+    <!-- APP -->
+    <main id="app" class="center">
+        <div class="content">
+            <h2 class="title">💖 Our Valentine 💖</h2>
+            <p class="subtitle">Since 15 Oct 2024 — counting every heartbeat.</p>
+            <div class="actions">
+                <button class="btn" id="openGallery">🖼️ Our Gallery</button>
+            </div>
+            <div class="countdown">
+                <div class="ring">
+                    <div class="bubble">
+                        <div id="years" class="num">0</div>
+                        <div class="lbl">Years</div>
+                    </div>
+                </div>
+                <div class="ring">
+                    <div class="bubble">
+                        <div id="months" class="num">0</div>
+                        <div class="lbl">Months</div>
+                    </div>
+                </div>
+                <div class="ring">
+                    <div class="bubble">
+                        <div id="days" class="num">0</div>
+                        <div class="lbl">Days</div>
+                    </div>
+                </div>
+                <div class="ring">
+                    <div class="bubble">
+                        <div id="hours" class="num">0</div>
+                        <div class="lbl">Hours</div>
+                    </div>
+                </div>
+                <div class="ring">
+                    <div class="bubble">
+                        <div id="minutes" class="num">0</div>
+                        <div class="lbl">Minutes</div>
+                    </div>
+                </div>
+                <div class="ring">
+                    <div class="bubble">
+                        <div id="seconds" class="num">0</div>
+                        <div class="lbl">Seconds</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- GALLERY -->
+    <div id="galleryModal" class="modal">
+        <div class="album glass">
+            <button class="btn btn-ghost closeX" id="closeGallery">✖</button>
+            <div class="tabs">
+                <button class="btn" id="photosTab">📷 Photos</button>
+                <button class="btn btn-ghost" id="videosTab">🎥 Videos</button>
+            </div>
+            <div id="photosGrid" class="grid"></div>
+            <div id="videosGrid" class="grid" style="display:none"></div>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX -->
+    <div id="lightbox">
+        <span id="closeLightbox">✖</span>
+        <span class="nav prev">&#10094;</span>
+        <span class="nav next">&#10095;</span>
+        <img id="lightboxImg" />
+        <video id="lightboxVideo" controls></video>
+    </div>
+
+    <script>
+        // Countdown
+        const startDate = new Date('2024-10-15T21:30:00+07:00');
+        function updateCountdown() {
+            const now = new Date();
+            let y = now.getFullYear() - startDate.getFullYear(),
+                m = now.getMonth() - startDate.getMonth(),
+                d = now.getDate() - startDate.getDate(),
+                h = now.getHours() - startDate.getHours(),
+                min = now.getMinutes() - startDate.getMinutes(),
+                s = now.getSeconds() - startDate.getSeconds();
+            if (s < 0) { s += 60; min-- } if (min < 0) { min += 60; h-- } if (h < 0) { h += 24; d-- }
+            if (d < 0) { const pm = new Date(now.getFullYear(), now.getMonth(), 0); d += pm.getDate(); m-- }
+            if (m < 0) { m += 12; y-- }
+            ["years", "months", "days", "hours", "minutes", "seconds"].forEach((id, i) => { document.getElementById(id).textContent = [y, m, d, h, min, s][i]; });
+        }
+        setInterval(updateCountdown, 1000); updateCountdown();
+
+        // Lock
+        const pw = document.getElementById('pw'), lock = document.getElementById('lock'), app = document.getElementById('app'), lockError = document.getElementById('lockError');
+        const correctPassword = "15102024";
+        document.getElementById('unlockBtn').onclick = () => { if (pw.value === correctPassword) { lock.style.display = 'none'; app.style.display = 'flex'; } else lockError.textContent = '❌ Wrong password!'; }
+
+        // Gallery
+        const photos = ["Photos/img 1.jpg", "Photos/img 2.jpg", "Photos/img 3.jpg", "Photos/img 4.jpg", "Photos/img 5.jpg", "Photos/img 6.jpg", "Photos/img 7.jpg", "Photos/img 8.jpg", "Photos/img 9.jpg"];
+        const videos = ["Videos/Vid 1.mov", "Videos/Vid 2.mov", "Videos/Vid 3.mov", "Videos/vid 4.mov", "Videos/vid 5.mov", "Videos/vid 6.mov", "Videos/vid 7.mp4", "Videos/vid 8.mp4", "Videos/vid 9.mp4"];
+
+        const galleryModal = document.getElementById('galleryModal');
+        const openGalleryBtn = document.getElementById('openGallery');
+        const closeGallery = document.getElementById('closeGallery');
+        const photosTab = document.getElementById('photosTab');
+        const videosTab = document.getElementById('videosTab');
+        const photosGrid = document.getElementById('photosGrid');
+        const videosGrid = document.getElementById('videosGrid');
+
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightboxImg');
+        const lightboxVideo = document.getElementById('lightboxVideo');
+        const closeLightbox = document.getElementById('closeLightbox');
+        const nextBtn = document.querySelector('#lightbox .next');
+        const prevBtn = document.querySelector('#lightbox .prev');
+
+        let currentIndex = 0, currentType = 'photo';
+
+        // Build gallery
+        function buildGallery() {
+            photosGrid.innerHTML = photos.map((src, i) => `<img src="${src}" class="thumb" data-index="${i}"/>`).join("");
+            videosGrid.innerHTML = videos.map((src, i) => `<video src="${src}" class="thumb" muted autoplay loop playsinline data-index="${i}"></video>`).join("");
+        }
+        buildGallery();
+
+        openGalleryBtn.onclick = () => galleryModal.classList.add('open');
+        closeGallery.onclick = () => galleryModal.classList.remove('open');
+
+        photosTab.onclick = () => {
+            photosGrid.style.display = "grid";
+            videosGrid.style.display = "none";
+            photosTab.classList.remove("btn-ghost");
+            videosTab.classList.add("btn-ghost");
+            currentType = 'photo';
+        }
+        videosTab.onclick = () => {
+            videosGrid.style.display = "grid";
+            photosGrid.style.display = "none";
+            videosTab.classList.remove("btn-ghost");
+            photosTab.classList.add("btn-ghost");
+            currentType = 'video';
+        }
+
+        // Lightbox open
+        photosGrid.addEventListener('click', e => {
+            if (e.target.tagName === "IMG") {
+                currentIndex = parseInt(e.target.dataset.index);
+                lightboxImg.src = photos[currentIndex];
+                lightboxImg.style.display = "block";
+                lightboxVideo.style.display = "none";
+                lightbox.classList.add('open');
+                currentType = 'photo';
+            }
+        });
+        videosGrid.addEventListener('click', e => {
+            if (e.target.tagName === "VIDEO") {
+                currentIndex = parseInt(e.target.dataset.index);
+                lightboxVideo.src = videos[currentIndex];
+                lightboxVideo.style.display = "block";
+                lightboxImg.style.display = "none";
+                lightbox.classList.add('open');
+                lightboxVideo.play();
+                currentType = 'video';
+            }
+        });
+
+        // Lightbox navigation
+        nextBtn.onclick = () => {
+            if (currentType === 'photo') {
+                currentIndex = (currentIndex + 1) % photos.length;
+                lightboxImg.src = photos[currentIndex];
+            } else {
+                currentIndex = (currentIndex + 1) % videos.length;
+                lightboxVideo.src = videos[currentIndex];
+                lightboxVideo.play();
+            }
+        }
+        prevBtn.onclick = () => {
+            if (currentType === 'photo') {
+                currentIndex = (currentIndex - 1 + photos.length) % photos.length;
+                lightboxImg.src = photos[currentIndex];
+            } else {
+                currentIndex = (currentIndex - 1 + videos.length) % videos.length;
+                lightboxVideo.src = videos[currentIndex];
+                lightboxVideo.  play();
+            }
+        }
+
+        closeLightbox.onclick = () => {
+            lightbox.classList.remove('open');
+            lightboxVideo.pause();
+        }
+    </script>
+
+</body>
+
+</html>
